@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopAdmin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin-panel/app.css">
+</head>
+<body>
+
+<div id="login-view" class="login-page" hidden>
+  <main class="login-box">
+    <div class="brand brand--center">
+      <div class="brand__logo">S</div>
+      <div class="brand__name">ShopAdmin</div>
+    </div>
+
+    <form id="login-form" class="card login-card" novalidate>
+      <div>
+        <h1 class="title">Admin sign in</h1>
+        <p class="muted">Only admin accounts can access this panel.</p>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="username" placeholder="admin@example.com" required>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+
+      <div id="login-error" class="alert" role="alert" hidden></div>
+
+      <button id="login-btn" type="submit" class="btn btn--primary btn--block">Sign in</button>
+    </form>
+
+    <p class="muted small center"><code>POST /api/login</code> · Laravel Sanctum token</p>
+  </main>
+</div>
+
+<div id="app-view" class="layout" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand__logo">S</div>
+      <div class="brand__name">ShopAdmin</div>
+    </div>
+
+    <nav class="nav" aria-label="Main">
+      <a href="#/dashboard" class="nav__item" data-route="dashboard">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        Dashboard
+      </a>
+      <a href="#/users" class="nav__item" data-route="users">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M16 4a4 4 0 0 1 0 8"/><path d="M22 21c0-3-2-5-4-5.5"/></svg>
+        Users
+      </a>
+      <a href="#/products" class="nav__item" data-route="products">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>
+        Products
+      </a>
+      <a href="#/orders" class="nav__item" data-route="orders">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l3 12h11l2-8H7"/></svg>
+        Orders
+      </a>
+      <a href="#/reports" class="nav__item" data-route="reports">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>
+        Reports
+      </a>
+      <span class="nav__item is-disabled" aria-disabled="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>
+        Settings <em class="soon">Soon</em>
+      </span>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="me">
+        <div id="me-avatar" class="avatar avatar--dark">A</div>
+        <div class="me__text">
+          <span id="me-name" class="me__name">Admin</span>
+          <span id="me-email" class="me__email"></span>
+        </div>
+      </div>
+      <button id="logout-btn" type="button" class="btn btn--ghost-dark">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <div id="view-dashboard" class="view">
+      <header class="topbar">
+        <div>
+          <h1 class="title title--lg">Dashboard</h1>
+          <p class="muted">Users and roles overview</p>
+        </div>
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <label for="search" class="sr-only">Search users</label>
+          <input id="search" type="search" placeholder="Search by name or email">
+        </div>
+      </header>
+
+      <section class="stats" aria-label="Stats">
+        <div class="card stat"><span class="stat__label">Total users</span><span id="stat-total" class="stat__value">–</span></div>
+        <div class="card stat"><span class="stat__label">Customers</span><span id="stat-customers" class="stat__value">–</span></div>
+        <div class="card stat"><span class="stat__label">Admins</span><span id="stat-admins" class="stat__value">–</span></div>
+        <div class="card stat"><span class="stat__label">Joined this week</span><span id="stat-week" class="stat__value">–</span></div>
+      </section>
+
+      <section id="users" class="card table-card" aria-labelledby="users-title">
+        <div class="table-card__head">
+          <div>
+            <h2 id="users-title" class="title title--sm">Users</h2>
+            <code class="muted small">GET /api/admin/users</code>
+          </div>
+          <div class="segmented" id="role-filter" role="group" aria-label="Filter by role">
+            <button type="button" class="segmented__btn is-active" data-value="" aria-pressed="true">All</button>
+            <button type="button" class="segmented__btn" data-value="admin" aria-pressed="false">Admins</button>
+            <button type="button" class="segmented__btn" data-value="customer" aria-pressed="false">Customers</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
+                <th scope="col">Joined</th>
+                <th scope="col" class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-body"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card__foot">
+          <span id="page-info">Loading…</span>
+          <div class="pager">
+            <button id="prev-btn" type="button" class="btn btn--outline" disabled>Previous</button>
+            <button id="next-btn" type="button" class="btn btn--outline" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-products" class="view" hidden>
+      <header class="topbar">
+        <div>
+          <h1 class="title title--lg">Products</h1>
+          <p class="muted">Add, update and manage your catalog</p>
+        </div>
+        <div class="topbar__actions">
+          <div class="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <label for="product-search" class="sr-only">Search products</label>
+            <input id="product-search" type="search" placeholder="Search by name or SKU">
+          </div>
+          <button id="add-product-btn" type="button" class="btn btn--primary">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Add product
+          </button>
+        </div>
+      </header>
+
+      <section id="product-form-card" class="card form-card" hidden>
+        <form id="product-form" novalidate>
+          <div class="form-card__head">
+            <h2 id="product-form-title" class="title title--sm">Add product</h2>
+            <code id="product-form-endpoint" class="muted small">POST /api/admin/products</code>
+          </div>
+
+          <div class="form-grid">
+            <div class="field field--wide">
+              <label for="p-name">Name</label>
+              <input id="p-name" name="name" type="text" maxlength="150" placeholder="Wireless Mouse" required>
+              <span class="field__error" data-error-for="name"></span>
+            </div>
+            <div class="field">
+              <label for="p-sku">SKU</label>
+              <input id="p-sku" name="sku" type="text" maxlength="50" placeholder="ACC-MOUSE-01" required>
+              <span class="field__error" data-error-for="sku"></span>
+            </div>
+            <div class="field">
+              <label for="p-price">Price (₹)</label>
+              <input id="p-price" name="price" type="number" min="0" step="0.01" placeholder="799.00" required>
+              <span class="field__error" data-error-for="price"></span>
+            </div>
+            <div class="field">
+              <label for="p-stock">Stock quantity</label>
+              <input id="p-stock" name="stock_quantity" type="number" min="0" step="1" placeholder="50" required>
+              <span class="field__error" data-error-for="stock_quantity"></span>
+            </div>
+            <div class="field">
+              <label for="p-status">Status</label>
+              <select id="p-status" name="status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <span class="field__error" data-error-for="status"></span>
+            </div>
+          </div>
+
+          <div id="product-form-error" class="alert" role="alert" hidden></div>
+
+          <div class="form-card__actions">
+            <button id="product-cancel" type="button" class="btn btn--outline">Cancel</button>
+            <button id="product-save" type="submit" class="btn btn--primary">Save product</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card table-card" aria-labelledby="products-title">
+        <div class="table-card__head">
+          <div>
+            <h2 id="products-title" class="title title--sm">All products</h2>
+            <code class="muted small">GET /api/admin/products</code>
+          </div>
+          <div class="segmented" id="product-filter" role="group" aria-label="Filter products">
+            <button type="button" class="segmented__btn is-active" data-value="" aria-pressed="true">All</button>
+            <button type="button" class="segmented__btn" data-value="active" aria-pressed="false">Active</button>
+            <button type="button" class="segmented__btn" data-value="inactive" aria-pressed="false">Inactive</button>
+            <button type="button" class="segmented__btn" data-value="deleted" aria-pressed="false">Deleted</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">SKU</th>
+                <th scope="col" class="right">Price</th>
+                <th scope="col" class="right">Stock</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-body"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card__foot">
+          <span id="product-page-info">Loading…</span>
+          <div class="pager">
+            <button id="product-prev" type="button" class="btn btn--outline" disabled>Previous</button>
+            <button id="product-next" type="button" class="btn btn--outline" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-orders" class="view" hidden>
+      <header class="topbar">
+        <div>
+          <h1 class="title title--lg">Orders</h1>
+          <p class="muted">Track customer orders and update their status</p>
+        </div>
+      </header>
+
+      <section class="card table-card" aria-labelledby="orders-title">
+        <div class="table-card__head">
+          <div>
+            <h2 id="orders-title" class="title title--sm">All orders</h2>
+            <code class="muted small">GET /api/admin/orders</code>
+          </div>
+          <div class="segmented" id="order-filter" role="group" aria-label="Filter orders by status">
+            <button type="button" class="segmented__btn is-active" data-value="" aria-pressed="true">All</button>
+            <button type="button" class="segmented__btn" data-value="pending" aria-pressed="false">Pending</button>
+            <button type="button" class="segmented__btn" data-value="paid" aria-pressed="false">Paid</button>
+            <button type="button" class="segmented__btn" data-value="shipped" aria-pressed="false">Shipped</button>
+            <button type="button" class="segmented__btn" data-value="cancelled" aria-pressed="false">Cancelled</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col" class="right">Items</th>
+                <th scope="col" class="right">Total</th>
+                <th scope="col">Status</th>
+                <th scope="col">Placed</th>
+                <th scope="col" class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-body"></tbody>
+          </table>
+        </div>
+
+        <div class="table-card__foot">
+          <span id="order-page-info">Loading…</span>
+          <div class="pager">
+            <button id="order-prev" type="button" class="btn btn--outline" disabled>Previous</button>
+            <button id="order-next" type="button" class="btn btn--outline" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-reports" class="view" hidden>
+      <header class="topbar">
+        <div>
+          <h1 class="title title--lg">Reports</h1>
+          <p class="muted">Best-selling products in a date range</p>
+        </div>
+      </header>
+
+      <section class="card form-card">
+        <form id="report-form" novalidate>
+          <div class="form-card__head">
+            <h2 class="title title--sm">Top products by quantity sold</h2>
+            <code id="report-endpoint" class="muted small">GET /api/admin/reports/top-products</code>
+          </div>
+
+          <div class="report-filters">
+            <div class="field">
+              <label for="r-from">From</label>
+              <input id="r-from" name="from" type="date" required>
+              <span class="field__error" data-error-for="from"></span>
+            </div>
+            <div class="field">
+              <label for="r-to">To</label>
+              <input id="r-to" name="to" type="date" required>
+              <span class="field__error" data-error-for="to"></span>
+            </div>
+            <div class="field">
+              <label for="r-limit">Show</label>
+              <select id="r-limit" name="limit">
+                <option value="5">Top 5</option>
+                <option value="10">Top 10</option>
+                <option value="20">Top 20</option>
+              </select>
+              <span class="field__error" data-error-for="limit"></span>
+            </div>
+            <div class="report-filters__actions">
+              <button id="report-run" type="submit" class="btn btn--primary">Run report</button>
+            </div>
+          </div>
+
+          <div class="segmented report-presets" id="report-presets" role="group" aria-label="Quick date ranges">
+            <button type="button" class="segmented__btn" data-days="7" aria-pressed="false">Last 7 days</button>
+            <button type="button" class="segmented__btn is-active" data-days="30" aria-pressed="true">Last 30 days</button>
+            <button type="button" class="segmented__btn" data-days="90" aria-pressed="false">Last 90 days</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="stats" aria-label="Report totals">
+        <div class="card stat"><span class="stat__label">Units sold (shown)</span><span id="report-units" class="stat__value">–</span></div>
+        <div class="card stat"><span class="stat__label">Revenue (shown)</span><span id="report-revenue" class="stat__value">–</span></div>
+        <div class="card stat"><span class="stat__label">Counted statuses</span><span id="report-statuses" class="stat__value stat__value--sm">–</span></div>
+      </section>
+
+      <section class="card table-card" aria-labelledby="report-title">
+        <div class="table-card__head">
+          <div>
+            <h2 id="report-title" class="title title--sm">Results</h2>
+            <span id="report-range" class="muted small"></span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Product</th>
+                <th scope="col">SKU</th>
+                <th scope="col">Quantity sold</th>
+                <th scope="col" class="right">Orders</th>
+                <th scope="col" class="right">Revenue</th>
+              </tr>
+            </thead>
+            <tbody id="report-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="/admin-panel/app.js"></script>
+</body>
+</html>
